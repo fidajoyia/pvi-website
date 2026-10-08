@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courses</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-title">
+    <h1>Hamare Courses</h1>
+    <p>Apni pasand ka program chunein aur apply karein</p>
+  </div>
+
+  <main class="container">
+    <section>
+      <div class="field" style="max-width:400px;margin:0 auto 30px">
+        <input type="text" id="search" placeholder="🔍 Course talash karein...">
+      </div>
+      <div id="course-list"></div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const list = document.getElementById("course-list");
+    const meta = (icon, label, value) => value ? `<li>${icon} ${label}: ${escapeHtml(value)}</li>` : "";
+
+    function card(c) {
+      return `
+        <div class="card">
+          <span class="course-code">${escapeHtml(c.code)}</span>
+          <h3 style="margin-top:8px">${escapeHtml(c.name)}</h3>
+          <ul class="course-meta">
+            ${meta("⏱", "Duration", c.duration)}
+            ${meta("ℹ️", "Note", c.note)}
+            ${meta("🎓", "Seats", c.seats)}
+            ${meta("💰", "Fee", c.fee)}
+            ${meta("✅", "Eligibility", c.eligibility)}
+          </ul>
+          ${c.features ? `<ul class="features">${c.features.map(f => `<li>${escapeHtml(f)}</li>`).join("")}</ul>` : ""}
+          <a href="apply.html?course=${encodeURIComponent(c.code)}" class="btn btn-primary">Apply Karein</a>
+        </div>`;
+    }
+
+    function show(filter = "") {
+      const q = filter.toLowerCase();
+      const courses = getCourses().filter(c =>
+        c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+      const cats = [...new Set([...CATEGORIES, ...courses.map(c => c.category || "Other Courses")])];
+      const html = cats.map(cat => {
+        const items = courses.filter(c => (c.category || "Other Courses") === cat);
+        const isNavttc = cat.startsWith("NAVTTC");
+        return items.length ? `
+          <h2 class="section-title" style="margin:30px 0 20px" ${isNavttc ? 'id="navttc"' : ""}>${escapeHtml(cat)}</h2>
+          ${isNavttc ? `<div class="card navttc-note">
+            <strong>Muft Dakhla (Free Admission)</strong> — NAVTTC aur Prime Minister's Youth Programme ke tehat.<br>
+            👥 ${NAVTTC_ELIGIBILITY}<br>
+            📄 Saath layein: ${NAVTTC_INFO.documents}<br>
+            🌐 Online apply: <a href="${NAVTTC_INFO.applyUrl}" target="_blank" rel="noopener">nsis.navttc.gov.pk</a> · 📞 ${phoneLinks()}
+          </div>` : ""}
+          <div class="grid">${items.map(card).join("")}</div>` : "";
+      }).join("");
+      list.innerHTML = html || "<p>Koi course nahi mila.</p>";
+    }
+    document.getElementById("search").addEventListener("input", e => show(e.target.value));
+    show();
+    if (location.hash) document.querySelector(location.hash)?.scrollIntoView();
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-title">
+    <h1>Notifications & Announcements</h1>
+    <p>College ki taaza tareen khabrein</p>
+  </div>
+
+  <main class="container" style="max-width:850px">
+    <section id="notice-list"></section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const notices = getNotifications();
+    document.getElementById("notice-list").innerHTML = notices.length ? notices.map(n => `
+      <div class="notice ${n.important ? "important" : ""}">
+        <span class="date">📅 ${formatDate(n.date)}</span>
+        <h3>${escapeHtml(n.title)}${n.important ? '<span class="tag-new">Important</span>' : ""}</h3>
+        <p>${escapeHtml(n.text)}</p>
+      </div>`).join("") : "<p>Abhi koi notification nahi hai.</p>";
+  </script>
+</body>
+</html>

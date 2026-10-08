@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home | College</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="ticker"><span id="ticker"></span></div>
+
+  <div class="hero">
+    <img src="images/logo.png" alt="Prime Vocational Institute logo" class="hero-logo">
+    <h1 id="hero-name"></h1>
+    <p style="font-size:24px;margin-bottom:4px">Upgrade Your Skills, <strong class="accent">BUILD YOUR FUTURE.</strong></p>
+    <p id="hero-tagline"></p>
+    <a href="apply.html" class="btn btn-accent">Admission Open — Apply Now</a>
+    <a href="courses.html" class="btn btn-outline">Courses Dekhein</a>
+    <br><span class="affiliation" id="affiliation"></span>
+  </div>
+
+  <main class="container">
+    <section>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <section class="two-col">
+      <div>
+        <h2 class="section-title" style="text-align:left">College ke baare mein</h2>
+        <p id="about"></p>
+      </div>
+      <div class="card">
+        <h3>Principal ka Paigham</h3>
+        <p id="principal"></p>
+      </div>
+    </section>
+
+    <section>
+      <div class="navttc-banner">
+        <img src="images/navttc-partner.jpg" alt="NAVTTC Partner Institute — Prime Vocational Institute"
+             onclick="openLightbox(this.src, 'NAVTTC Partner Institute')">
+        <div>
+          <span class="course-code" style="background:#e3f3ea;color:#0d5c36">Govt. of Pakistan</span>
+          <h2>NAVTTC Partner Institute</h2>
+          <p>Prime Vocational Institute, National Vocational &amp; Technical Training Commission (NAVTTC) ka partner institute hai. Yahan Hukumat-e-Pakistan ki janib se NAVTTC aur Prime Minister's Youth Programme ke tehat naujawanon ko hunarmand banane ke liye <strong>muft courses</strong> karwaye jate hain.</p>
+          <ul class="course-meta" id="navttc-points"></ul>
+          <a href="courses.html#navttc" class="btn btn-primary">Free Courses Dekhein</a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Hamare Posters</h2>
+      <div class="gallery" id="gallery"></div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Hamari Facilities</h2>
+      <div class="grid" id="facilities"></div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Latest Notifications</h2>
+      <div id="latest-notices"></div>
+      <p style="text-align:center"><a href="notifications.html" class="btn btn-primary">Tamam Notifications</a></p>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.title = "Home | " + COLLEGE.name;
+    document.getElementById("hero-name").textContent = COLLEGE.name + ", " + COLLEGE.city;
+    document.getElementById("hero-tagline").textContent = COLLEGE.subTagline + " · " + COLLEGE.admissionBadge;
+    document.getElementById("affiliation").textContent = COLLEGE.affiliation;
+    document.getElementById("about").textContent = COLLEGE.about;
+    document.getElementById("principal").textContent = COLLEGE.principalMessage;
+
+    document.getElementById("stats").innerHTML = COLLEGE.stats
+      .map(s => `<div class="card"><strong>${s.value}</strong><span>${s.label}</span></div>`).join("");
+    document.getElementById("navttc-points").innerHTML = `
+      <li>👥 ${NAVTTC_ELIGIBILITY}</li>
+      <li>📄 Saath layein: ${NAVTTC_INFO.documents}</li>
+      <li>🌐 Online apply: <a href="${NAVTTC_INFO.applyUrl}" target="_blank" rel="noopener">nsis.navttc.gov.pk</a></li>`;
+    document.getElementById("gallery").innerHTML = POSTERS.map(p => `
+      <figure onclick="openLightbox('${p.src}', '${p.title.replace(/'/g, "\'")}')">
+        <img src="${p.src}" alt="${escapeHtml(p.title)}" loading="lazy">
+        <figcaption>${escapeHtml(p.title)}</figcaption>
+      </figure>`).join("");
+
+    document.getElementById("facilities").innerHTML = COLLEGE.facilities
+      .map(f => `<div class="card facility">${f}</div>`).join("");
+
+    const notices = getNotifications();
+    document.getElementById("ticker").textContent = notices.map(n => "📢 " + n.title).join("     •     ");
+    document.getElementById("latest-notices").innerHTML = notices.slice(0, 3).map(n => `
+      <div class="notice ${n.important ? "important" : ""}">
+        <span class="date">${formatDate(n.date)}</span>
+        <h3>${escapeHtml(n.title)}${n.important ? '<span class="tag-new">Important</span>' : ""}</h3>
+        <p>${escapeHtml(n.text)}</p>
+      </div>`).join("");
+  </script>
+</body>
+</html>

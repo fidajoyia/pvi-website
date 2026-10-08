@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Results</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-title">
+    <h1>Result Check Karein</h1>
+    <p>Apna Roll Number likh kar result dekhein</p>
+  </div>
+
+  <main class="container" style="max-width:850px">
+    <section>
+      <form id="result-form" class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:end">
+        <div class="field" style="flex:1;min-width:200px;margin:0">
+          <label>Roll Number</label>
+          <input id="roll" placeholder="Maslan: 1001" required>
+        </div>
+        <button class="btn btn-primary">Result Dekhein</button>
+      </form>
+      <p style="color:var(--muted);font-size:13px;margin-top:8px">Demo ke liye roll number 1001 ya 1002 try karein.</p>
+
+      <div id="output" style="margin-top:24px"></div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    function grade(p) {
+      if (p >= 85) return "A+";
+      if (p >= 80) return "A";
+      if (p >= 70) return "B";
+      if (p >= 60) return "C";
+      if (p >= 50) return "D";
+      if (p >= 40) return "E";
+      return "F";
+    }
+
+    document.getElementById("result-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const roll = document.getElementById("roll").value.trim();
+      const r = getResults().find(x => x.roll === roll);
+      const out = document.getElementById("output");
+
+      if (!r) {
+        out.innerHTML = `<div class="alert alert-error">Roll number <strong>${escapeHtml(roll)}</strong> ka result nahi mila.</div>`;
+        return;
+      }
+
+      const total = r.subjects.reduce((s, x) => s + Number(x.total), 0);
+      const obtained = r.subjects.reduce((s, x) => s + Number(x.obtained), 0);
+      const pct = (obtained / total) * 100;
+      const passed = r.subjects.every(x => x.obtained / x.total >= 0.4);
+
+      out.innerHTML = `
+        <div class="card">
+          <h3 style="text-align:center;margin-bottom:16px">${COLLEGE.name} — Result Card</h3>
+          <div class="result-head">
+            <div><strong>Naam:</strong> ${escapeHtml(r.name)}</div>
+            <div><strong>Roll No:</strong> ${escapeHtml(r.roll)}</div>
+            <div><strong>Course:</strong> ${escapeHtml(r.course)}</div>
+            <div><strong>Semester:</strong> ${escapeHtml(r.semester)}</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <tr><th>Subject</th><th>Total</th><th>Obtained</th><th>Grade</th></tr>
+              ${r.subjects.map(s => `<tr><td>${escapeHtml(s.name)}</td><td>${s.total}</td><td>${s.obtained}</td><td>${grade(s.obtained / s.total * 100)}</td></tr>`).join("")}
+              <tr><th>Total</th><th>${total}</th><th>${obtained}</th><th>${grade(pct)}</th></tr>
+            </table>
+          </div>
+          <p style="margin-top:16px;font-size:18px">
+            Percentage: <strong>${pct.toFixed(2)}%</strong> &nbsp;|&nbsp;
+            Status: <span class="${passed ? "pass" : "fail"}">${passed ? "PASS" : "FAIL"}</span>
+          </p>
+          <button class="btn btn-primary" style="margin-top:12px" onclick="window.print()">🖨 Print Result</button>
+        </div>`;
+    });
+  </script>
+</body>
+</html>

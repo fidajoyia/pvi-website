@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact & Location</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-title">
+    <h1>Contact & Location</h1>
+    <p>Hum se rabta karein ya college tashreef layein</p>
+  </div>
+
+  <main class="container">
+    <section class="two-col">
+      <div class="card">
+        <h3>College ka Pata</h3>
+        <p id="address" style="margin:10px 0"></p>
+        <p id="phone"></p>
+        <p id="email"></p>
+        <p id="timing"></p>
+        <a id="directions" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top:16px">📍 Google Maps par Raasta Dekhein</a>
+      </div>
+      <iframe id="map" class="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="College location"></iframe>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const q = encodeURIComponent(COLLEGE.mapQuery);
+    document.getElementById("map").src = `https://maps.google.com/maps?q=${q}&z=15&output=embed`;
+    document.getElementById("directions").href = `https://www.google.com/maps/search/?api=1&query=${q}`;
+    document.getElementById("address").textContent = "📍 " + COLLEGE.address;
+    document.getElementById("phone").innerHTML = "📞 " + phoneLinks();
+    document.getElementById("email").textContent = COLLEGE.email ? "✉️ " + COLLEGE.email : "";
+    document.getElementById("timing").textContent = COLLEGE.timing ? "🕗 " + COLLEGE.timing : "";
+  </script>
+</body>
+</html>

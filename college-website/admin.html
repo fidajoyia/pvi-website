@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <div class="page-title">
+    <h1>Admin Panel</h1>
+    <p>Applications, notifications, results aur courses manage karein</p>
+  </div>
+
+  <main class="container">
+    <section>
+      <div class="tabs">
+        <button data-tab="applications" class="active">📋 Applications</button>
+        <button data-tab="notices">📢 Notifications</button>
+        <button data-tab="results">📊 Results</button>
+        <button data-tab="courses">🎓 Courses</button>
+      </div>
+
+      <!-- Applications -->
+      <div id="tab-applications" class="tab card">
+        <h3 style="margin-bottom:12px">Aayi hui Applications</h3>
+        <div class="table-wrap" id="app-table"></div>
+      </div>
+
+      <!-- Notifications -->
+      <div id="tab-notices" class="tab card hidden">
+        <h3 style="margin-bottom:12px">Nayi Notification</h3>
+        <form id="notice-form">
+          <div class="field"><label>Title</label><input name="title" required></div>
+          <div class="field"><label>Detail</label><textarea name="text" rows="3" required></textarea></div>
+          <div class="field"><label><input type="checkbox" name="important" style="width:auto"> Important</label></div>
+          <button class="btn btn-primary">Publish</button>
+        </form>
+        <h3 style="margin:24px 0 12px">Mojooda Notifications</h3>
+        <div id="notice-admin-list"></div>
+      </div>
+
+      <!-- Results -->
+      <div id="tab-results" class="tab card hidden">
+        <h3 style="margin-bottom:12px">Naya Result Add Karein</h3>
+        <form id="result-form">
+          <div class="row">
+            <div class="field"><label>Roll Number</label><input name="roll" required></div>
+            <div class="field"><label>Student Naam</label><input name="name" required></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Course</label><select name="course" id="result-course" required></select></div>
+            <div class="field"><label>Semester / Class</label><input name="semester" placeholder="1st Semester" required></div>
+          </div>
+          <label style="font-weight:600;font-size:14px">Subjects (Naam, Total, Obtained)</label>
+          <div id="subjects"></div>
+          <button type="button" class="btn" style="background:#e6f1f6;margin:8px 0 16px" onclick="addSubjectRow()">+ Subject</button><br>
+          <button class="btn btn-primary">Result Save Karein</button>
+        </form>
+        <h3 style="margin:24px 0 12px">Mojooda Results</h3>
+        <div class="table-wrap" id="result-admin-list"></div>
+      </div>
+
+      <!-- Courses -->
+      <div id="tab-courses" class="tab card hidden">
+        <h3 style="margin-bottom:12px">Naya Course Register Karein</h3>
+        <form id="course-form">
+          <div class="row">
+            <div class="field"><label>Course Code</label><input name="code" placeholder="BSIT" required></div>
+            <div class="field"><label>Course Naam</label><input name="name" required></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Category</label><select name="category" id="course-category" required></select></div>
+            <div class="field"><label>Duration</label><input name="duration" placeholder="6 Mahine"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Fee</label><input name="fee" placeholder="Rs. 15,000"></div>
+            <div class="field"><label>Seats</label><input type="number" name="seats"></div>
+          </div>
+          <div class="field"><label>Eligibility</label><input name="eligibility" placeholder="Matric"></div>
+          <button class="btn btn-primary">Course Add Karein</button>
+        </form>
+        <h3 style="margin:24px 0 12px">Mojooda Courses</h3>
+        <div class="table-wrap" id="course-admin-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // ----- Tabs -----
+    document.querySelectorAll(".tabs button").forEach(btn => btn.addEventListener("click", () => {
+      document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b === btn));
+      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("hidden", t.id !== "tab-" + btn.dataset.tab));
+    }));
+
+    // ----- Applications -----
+    function renderApplications() {
+      const apps = getApplications();
+      document.getElementById("app-table").innerHTML = apps.length ? `
+        <table>
+          <tr><th>ID</th><th>Naam</th><th>Walid</th><th>Course</th><th>Phone</th><th>%</th><th>Status</th><th></th></tr>
+          ${apps.map((a, i) => `<tr>
+            <td>${escapeHtml(a.id)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.father)}</td>
+            <td>${escapeHtml(a.course)}</td><td>${escapeHtml(a.phone)}</td><td>${a.percentage}%</td>
+            <td><select onchange="setStatus(${i}, this.value)">
+              ${["Pending", "Accepted", "Rejected"].map(s => `<option ${a.status === s ? "selected" : ""}>${s}</option>`).join("")}
+            </select></td>
+            <td><button class="btn btn-danger" onclick="removeItem('applications', ${i})">Delete</button></td>
+          </tr>`).join("")}
+        </table>` : "<p>Abhi tak koi application nahi aayi.</p>";
+    }
+    function setStatus(i, status) {
+      const apps = getApplications();
+      apps[i].status = status;
+      save("applications", apps);
+    }
+
+    // ----- Notifications -----
+    function renderNotices() {
+      document.getElementById("notice-admin-list").innerHTML = getNotifications().map(n => `
+        <div class="notice ${n.important ? "important" : ""}" style="display:flex;justify-content:space-between;gap:12px">
+          <div><span class="date">${formatDate(n.date)}</span><h3>${escapeHtml(n.title)}</h3></div>
+          <button class="btn btn-danger" onclick="deleteNotice(${n.id})">Delete</button>
+        </div>`).join("");
+    }
+    function deleteNotice(id) {
+      save("notifications", getNotifications().filter(n => n.id !== id));
+      renderNotices();
+    }
+    document.getElementById("notice-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const f = e.target;
+      const list = getNotifications();
+      list.push({
+        id: Date.now(),
+        date: new Date().toISOString().slice(0, 10),
+        title: f.title.value.trim(),
+        text: f.text.value.trim(),
+        important: f.important.checked,
+      });
+      save("notifications", list);
+      f.reset();
+      renderNotices();
+      alert("Notification publish ho gayi!");
+    });
+
+    // ----- Results -----
+    function addSubjectRow() {
+      const div = document.createElement("div");
+      div.className = "row subject-row";
+      div.style.gridTemplateColumns = "2fr 1fr 1fr";
+      div.innerHTML = `
+        <div class="field"><input placeholder="Subject" class="s-name" required></div>
+        <div class="field"><input type="number" placeholder="Total" class="s-total" value="100" required></div>
+        <div class="field"><input type="number" placeholder="Obtained" class="s-obt" required></div>`;
+      document.getElementById("subjects").appendChild(div);
+    }
+    function renderResults() {
+      const rs = getResults();
+      document.getElementById("result-admin-list").innerHTML = `
+        <table>
+          <tr><th>Roll</th><th>Naam</th><th>Course</th><th>Semester</th><th></th></tr>
+          ${rs.map((r, i) => `<tr><td>${escapeHtml(r.roll)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.course)}</td><td>${escapeHtml(r.semester)}</td>
+            <td><button class="btn btn-danger" onclick="removeItem('results', ${i})">Delete</button></td></tr>`).join("")}
+        </table>`;
+    }
+    document.getElementById("result-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const f = e.target;
+      const subjects = [...document.querySelectorAll(".subject-row")].map(r => ({
+        name: r.querySelector(".s-name").value.trim(),
+        total: Number(r.querySelector(".s-total").value),
+        obtained: Number(r.querySelector(".s-obt").value),
+      }));
+      if (subjects.some(s => s.obtained > s.total)) return alert("Obtained marks total se zyada nahi ho sakte.");
+
+      const rs = getResults().filter(r => r.roll !== f.roll.value.trim()); // same roll ho to update
+      rs.push({ roll: f.roll.value.trim(), name: f.name.value.trim(), course: f.course.value, semester: f.semester.value.trim(), subjects });
+      save("results", rs);
+      f.reset();
+      document.getElementById("subjects").innerHTML = "";
+      addSubjectRow(); addSubjectRow();
+      renderResults();
+      alert("Result save ho gaya!");
+    });
+
+    // ----- Courses -----
+    function renderCourses() {
+      const cs = getCourses();
+      document.getElementById("result-course").innerHTML = cs.map(c => `<option>${escapeHtml(c.code)}</option>`).join("");
+      document.getElementById("course-category").innerHTML = CATEGORIES.map(c => `<option>${escapeHtml(c)}</option>`).join("");
+      document.getElementById("course-admin-list").innerHTML = `
+        <table>
+          <tr><th>Code</th><th>Naam</th><th>Category</th><th>Duration</th><th>Fee</th><th></th></tr>
+          ${cs.map((c, i) => `<tr><td>${escapeHtml(c.code)}</td><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.category || "-")}</td><td>${escapeHtml(c.duration || "-")}</td><td>${escapeHtml(c.fee || "-")}</td>
+            <td><button class="btn btn-danger" onclick="removeItem('courses', ${i})">Delete</button></td></tr>`).join("")}
+        </table>`;
+    }
+    document.getElementById("course-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      const cs = getCourses();
+      if (cs.some(c => c.code.toLowerCase() === data.code.toLowerCase())) return alert("Yeh course code pehle se mojood hai.");
+      cs.push(data);
+      save("courses", cs);
+      e.target.reset();
+      renderCourses();
+      alert("Course register ho gaya!");
+    });
+
+    // ----- Common delete -----
+    const getters = { applications: getApplications, results: getResults, courses: getCourses };
+    function removeItem(key, i) {
+      if (!confirm("Kya aap waqai delete karna chahte hain?")) return;
+      const list = getters[key]();
+      list.splice(i, 1);
+      save(key, list);
+      renderAll();
+    }
+
+    function renderAll() { renderApplications(); renderNotices(); renderResults(); renderCourses(); }
+    addSubjectRow(); addSubjectRow();
+    renderAll();
+  </script>
+</body>
+</html>
